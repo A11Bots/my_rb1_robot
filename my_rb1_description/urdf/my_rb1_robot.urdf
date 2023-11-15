@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 
 <robot name="Rb_1">
+    <gazebo reference="base_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
 	<!--Link - base_link -->
 	<link name="base_link">
 		<inertial>
