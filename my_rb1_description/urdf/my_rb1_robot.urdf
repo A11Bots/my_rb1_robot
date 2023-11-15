@@ -4,6 +4,65 @@
     <gazebo reference="base_link">
         <material>Gazebo/Black</material>
     </gazebo>
+
+    <!-- Gazebo tags - Laser scan -->
+    <gazebo reference="Laser_joint">
+        <preserveFixedJoint>true</preserveFixedJoint>
+    </gazebo>
+    <gazebo reference="front_laser">
+        <material>Gazebo/DarkGrey</material>
+    </gazebo>
+
+    <gazebo reference="front_laser">
+        <sensor type="ray" name="head_hokuyo_sensor">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>20</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>720</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-1.570796</min_angle>
+                        <max_angle>1.570796</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.20</min>
+                    <max>10.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+            </ray>
+            <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller" >
+                <topicName>/scan</topicName>
+                <frameName>sensor_laser</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+    
+    <gazebo>
+        <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <leftJoint>joint_baselink_leftwheel</leftJoint>
+            <rightJoint>joint_baselink_rightwheel</rightJoint>
+            <wheelSeparation>0.4</wheelSeparation>
+            <wheelDiameter>0.05</wheelDiameter>
+            <torque>10</torque>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>base_link</robotBaseFrame>
+        </plugin>
+    </gazebo>
+
+    
+
 	<!--Link - base_link -->
 	<link name="base_link">
 		<inertial>
@@ -33,7 +92,7 @@
 		<origin rpy="0 0 0" xyz="0 -0.2 -0.15" />
 		<child link="left_wheel" />
 		<parent link="base_link" />
-		<axis rpy="0 0 0" xyz="0 -0.2 0" />
+		<axis rpy="0 0 0" xyz="0 0 0" />
 		<limit effort="10000" velocity="1000" />
 		<joint_properties damping="1.0" friction="1.0" />
 	</joint>
@@ -49,13 +108,13 @@
 		<collision>
 			<origin rpy="1.5707 0 0" xyz="0 0 0" />
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 		</collision>
 		<visual>
 			<origin rpy="1.5707 0 0" xyz="0 0 0" /> 
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 			<material name="Red">
 				<color rgba="1 0 0 1" />
@@ -68,7 +127,7 @@
 		<origin rpy="0 0 0" xyz="0 0.2 -0.15" />
 		<child link="right_wheel" />
 		<parent link="base_link" />
-		<axis rpy="0 0 0" xyz="0 0.2 0" />
+		<axis rpy="0 0 0" xyz="0 0 0" />
 		<limit effort="10000" velocity="1000" />
 		<joint_properties damping="1.0" friction="1.0" />
 	</joint>
@@ -82,15 +141,15 @@
 
 		<!-- Tires -->
 		<collision>
-			<origin rpy="1.5707 0 0" xyz="0 0 0" />
+			<origin rpy="-1.5707 0 0" xyz="0 0 0" />
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 		</collision>
 		<visual>
-			<origin rpy="1.5707 0 0" xyz="0 0 0" /> 
+			<origin rpy="-1.5707 0 0" xyz="0 0 0" /> 
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 			<material name="Red">
 				<color rgba="1 0 0 1" />
@@ -116,13 +175,13 @@
 
         <!-- Caster wheel support -->
         <collision>
-            <origin rpy="0 0 0" xyz="0 0 0" />
+            <origin rpy="0 0 0" xyz="0 0 0.015" />
             <geometry>
                 <sphere radius="0.035" />
             </geometry>
         </collision>
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 0" />
+            <origin rpy="0 0 0" xyz="0 0 0.015" />
             <geometry>
                 <sphere radius="0.035" />
             </geometry>
@@ -133,13 +192,13 @@
 
         <!-- Caster wheel -->
         <collision>
-            <origin rpy="0 0 0" xyz="0 0 -0.025" />
+            <origin rpy="0 0 0" xyz="0 0 0.0" />
             <geometry>
                 <sphere radius="0.025" />
             </geometry>
         </collision>
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 -0.025" />
+            <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
                 <sphere radius="0.025" />
             </geometry>
@@ -167,13 +226,13 @@
 
         <!-- Caster wheel support -->
         <collision>
-            <origin rpy="0 0 0" xyz="0 0 0.0" />
+            <origin rpy="0 0 0" xyz="0 0 0.015" />
             <geometry>
                 <sphere radius="0.035" />
             </geometry>
         </collision>
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 0.0" />
+            <origin rpy="0 0 0" xyz="0 0 0.015" />
             <geometry>
                 <sphere radius="0.035" />
             </geometry>
@@ -184,13 +243,13 @@
 
         <!-- Caster wheel -->
         <collision>
-            <origin rpy="0 0 0" xyz="0 0 -0.025" />
+            <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
                 <sphere radius="0.025" />
             </geometry>
         </collision>
         <visual>
-            <origin rpy="0 0 0" xyz="0 0 -0.025" />
+            <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
                 <sphere radius="0.025" />
             </geometry>
@@ -220,17 +279,32 @@
     <!--Laser_Joint-->
     <joint name="Laser_joint" type="fixed">
         <origin rpy="0 0 0" xyz="0.25 0 0.075" />
-        <child link="laserscan" />
+        <child link="front_laser" />
         <parent link="base_link" />
-        <joint_properties damping="1.0" friction="0.0" />
+        <joint_properties damping="1.0" friction="1.0" />
     </joint>
 
-    <link name="laserscan" >
+    <link name="front_laser" >
         <inertial>
             <mass value="0" />
             <origin xyz="0 0 0" rpy="3.1415 0 0" />
             <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
         </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.015" length="0.020"/>
+            </geometry>
+            <material name="Red">
+                <color rgba="0.7 0.1 0.1 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.015" length="0.020"/>
+            </geometry>
+        </collision>
     </link>
 </robot>
 
