@@ -13,8 +13,8 @@
     <node name="mybot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
         args="-urdf -param robot_description -model my_rb1_robot -x $(arg x) -y $(arg y) -z $(arg z)"/>
 
-    <!-- send fake joint values -->
-    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
+    <!-- send fake joint values--> 
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
 
     <!-- Combine joint values -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>

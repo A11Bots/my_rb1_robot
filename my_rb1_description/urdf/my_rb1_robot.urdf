@@ -1,8 +1,24 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 
 <robot name="Rb_1">
-    <!--gazebo reference="base_link">
+    <gazebo reference="base_link">
         <material>Gazebo/Black</material>
+    </gazebo>
+
+    <!--gazebo>
+        <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <leftJoint>joint_baselink_leftwheel</leftJoint>
+            <rightJoint>joint_baselink_rightwheel</rightJoint>
+            <wheelSeparation>0.4</wheelSeparation>
+            <wheelDiameter>0.05</wheelDiameter>
+            <torque>10</torque>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>base_link</robotBaseFrame>
+        </plugin>
     </gazebo>
 
     <! Gazebo tags - Laser scan >
@@ -11,9 +27,9 @@
     </gazebo>
     <gazebo reference="front_laser">
         <material>Gazebo/DarkGrey</material>
-    </gazebo-->
+    </gazebo>
 
-    <!--gazebo reference="front_laser">
+    <gazebo reference="front_laser" >
         <sensor type="ray" name="head_hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
             <visualize>true</visualize>
@@ -38,28 +54,14 @@
                     <stddev>0.01</stddev>
                 </noise>
             </ray>
-            <plugin filename="libgazebo_ros_laser.so" name="gazebo_ros_head_hokuyo_controller" >
+            <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so" >
                 <topicName>/scan</topicName>
                 <frameName>sensor_laser</frameName>
             </plugin>
         </sensor>
-    </gazebo>
+    </gazebo!-->
     
-    <gazebo>
-        <plugin filename="libgazebo_ros_diff_drive.so" name="differential_drive_controller">
-            <alwaysOn>true</alwaysOn>
-            <updateRate>20</updateRate>
-            <leftJoint>joint_baselink_leftwheel</leftJoint>
-            <rightJoint>joint_baselink_rightwheel</rightJoint>
-            <wheelSeparation>0.4</wheelSeparation>
-            <wheelDiameter>0.05</wheelDiameter>
-            <torque>10</torque>
-            <commandTopic>cmd_vel</commandTopic>
-            <odometryTopic>odom</odometryTopic>
-            <odometryFrame>odom</odometryFrame>
-            <robotBaseFrame>base_link</robotBaseFrame>
-        </plugin>
-    </gazebo-->
+    
 
     
 
@@ -108,13 +110,13 @@
 		<collision>
 			<origin rpy="1.5707 0 0" xyz="0 0 0" />
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 		</collision>
 		<visual>
 			<origin rpy="1.5707 0 0" xyz="0 0 0" /> 
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 			<material name="Red">
 				<color rgba="1 0 0 1" />
@@ -143,13 +145,13 @@
 		<collision>
 			<origin rpy="-1.5707 0 0" xyz="0 0 0" />
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 		</collision>
 		<visual>
 			<origin rpy="-1.5707 0 0" xyz="0 0 0" /> 
 			<geometry>
-				<cylinder length="0.05" radius="0.05"/>	
+				<cylinder length="0.05" radius="0.025"/>	
 			</geometry>
 			<material name="Red">
 				<color rgba="1 0 0 1" />
