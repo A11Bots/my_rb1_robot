@@ -1,3 +1,0 @@
-int32 degrees    # The degree requested for robot to turn
----
-string result         # Did it achieve it?

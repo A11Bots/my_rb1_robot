@@ -1,0 +1,4 @@
+# my_rb1_ros/srv/Rotate.srv
+int32 degrees
+---
+string result

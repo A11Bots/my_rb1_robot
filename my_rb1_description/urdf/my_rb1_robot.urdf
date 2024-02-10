@@ -292,9 +292,15 @@
             <commandTopic>cmd_vel</commandTopic>
             <odometryTopic>odom</odometryTopic>
             <odometryFrame>odom</odometryFrame>
-            <robotBaseFrame>base_footprint</robotBaseFrame>
-            <publishOdom>true</publishOdom>
-            <publishWheelJointState>true</publishWheelJointState>
+            <robotBaseFrame>base_link</robotBaseFrame>
+            <publishWheelTF>false</publishWheelTF>
+            <publishWheelJointState>false</publishWheelJointState>
+            <rosDebugLevel>na</rosDebugLevel>
+            <wheelAcceleration>0</wheelAcceleration>
+            <wheelTorque>10</wheelTorque>
+            <odometrySource>world</odometrySource>
+            <publishOdomTF>true</publishOdomTF>
+            <publishTf>1</publishTf>
         </plugin>
     </gazebo>
     

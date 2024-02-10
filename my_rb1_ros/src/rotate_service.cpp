@@ -1,95 +1,125 @@
+// my_rb1_ros/src/rotate_service.cpp
+
 #include "geometry_msgs/Twist.h"
-#include "my_rb1_ros/rotate.h"
+#include "my_rb1_ros/Rotate.h"
 #include "nav_msgs/Odometry.h"
 #include "ros/ros.h"
-#include <cmath>
+#include <tf/transform_datatypes.h>
 
-class RotateNode {
+class RotateService {
 public:
-  RotateNode() {
-    // Subscribe to /odom topic
-    odometry_sub_ =
-        nh_.subscribe("/odom", 1, &RotateNode::odometryCallback, this);
+  RotateService() {
+    // Initialize the ROS node handle
+    nh = ros::NodeHandle("~");
 
-    // Advertise the /rotate_robot service
-    rotate_service_ =
-        nh_.advertiseService("/rotate_robot", &RotateNode::rotateService, this);
+    // Create the rotate_robot service
+    service = nh.advertiseService("/rotate_robot",
+                                  &RotateService::rotateCallback, this);
 
-    // Publish to the /cmd_vel topic
-    cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+    // Subscribe to the odometry topic
+    odomSubscriber =
+        nh.subscribe("/odom", 10, &RotateService::odomCallback, this);
 
-    ROS_INFO("Rotate node ready to rotate rb1.");
+    // Publish velocity commands to the cmd_vel topic
+    cmdVelPublisher = nh.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+
+    // Set the stabilization factor (adjust as needed)
+    stabilizationFactor = 0.2; // Adjust the stabilization factor as needed
   }
 
-  bool rotateService(my_rb1_ros::rotate::Request &req,
-                     my_rb1_ros::rotate::Response &res) {
-    // Extract the current orientation from the latest Odometry message
-    double current_orientation = current_odom_.pose.pose.orientation.z;
+  bool rotateCallback(my_rb1_ros::Rotate::Request &req,
+                      my_rb1_ros::Rotate::Response &res) {
+    // Store the requested degrees
+    requestedDegrees = req.degrees;
 
-    // Calculate the desired orientation based on the requested degrees
-    double target_orientation =
-        current_orientation + degreesToRadians(req.degrees);
+    // Set the rotation flag to true
+    rotating = true;
 
-    // Calculate the angular velocity to achieve the desired rotation
-    double angular_velocity =
-        calculateAngularVelocity(target_orientation, current_orientation);
+    // Calculate angular velocity for rotation
+    double angularVelocity = (req.degrees > 0) ? rotationSpeed : -rotationSpeed;
 
-    // If the error hasn't been displayed yet, publish the angular velocity to
-    // /cmd_vel
-    if (!error_displayed_) {
-      publishTwist(0.0, 0.0, angular_velocity);
+    // Create a Twist message for velocity commands
+    geometry_msgs::Twist twist;
+    twist.angular.z = angularVelocity;
 
-      // For simplicity, let's assume the rotation is always successful
+    // Publish the Twist message to cmd_vel
+    cmdVelPublisher.publish(twist);
+
+    // Set the target yaw angle
+    double targetYaw = initialYaw + req.degrees;
+
+    // Wait for the rotation to complete or timeout
+    ros::Time startTime = ros::Time::now();
+    while (ros::ok() &&
+           (ros::Time::now() - startTime).toSec() < rotationTimeout) {
+      ros::spinOnce();
+      ros::Rate(10).sleep();
+
+      // Get the current yaw angle from the odometry message
+      double currentYaw = tf::getYaw(odomMsg->pose.pose.orientation);
+
+      // Check if the robot has reached the target yaw angle for positive and
+      // negative rotations
+      if ((req.degrees > 0 && currentYaw >= targetYaw) ||
+          (req.degrees < 0 && currentYaw <= targetYaw)) {
+        // Reduce the angular velocity for stabilization
+        twist.angular.z = angularVelocity * stabilizationFactor;
+        cmdVelPublisher.publish(twist);
+
+        // Check if the stabilization period is completed
+        if ((ros::Time::now() - startTime).toSec() >= stabilizationDuration) {
+          rotating = false;
+          rotationSuccessful = true;
+        }
+      }
+    }
+
+    // Stop the robot after stabilization
+    twist.angular.z = 0.0;
+    cmdVelPublisher.publish(twist);
+
+    // Check if the rotation was successful
+    if (rotationSuccessful) {
       res.result = "Rotation completed successfully";
-      error_displayed_ =
-          true; // Set the flag to true after displaying the error
     } else {
-      res.result = "Rotation already completed";
+      res.result = "Rotation failed";
     }
 
     return true;
   }
 
-  void odometryCallback(const nav_msgs::Odometry::ConstPtr &msg) {
-    // Store odometry message
-    current_odom_ = *msg;
+  void odomCallback(const nav_msgs::Odometry::ConstPtr &receivedOdomMsg) {
+    // Store the received odometry message
+    odomMsg = receivedOdomMsg;
+
+    // Store the initial yaw angle when not rotating
+    if (!rotating) {
+      initialYaw = tf::getYaw(odomMsg->pose.pose.orientation);
+    }
   }
 
 private:
-  ros::NodeHandle nh_;
-  ros::Subscriber odometry_sub_;
-  ros::ServiceServer rotate_service_;
-  ros::Publisher cmd_vel_pub_;
-  nav_msgs::Odometry current_odom_;
-  bool error_displayed_;
-
-  double degreesToRadians(int degrees) { return degrees * M_PI / 180.0; }
-
-  double calculateAngularVelocity(double target_orientation,
-                                  double current_orientation) {
-    // Calculate the angular velocity to achieve the desired rotation
-    double error = target_orientation - current_orientation;
-
-    // Proportional control
-    double kp = 0.5;
-    double angular_velocity = kp * error;
-
-    return angular_velocity;
-  }
-
-  void publishTwist(double linear_x, double linear_y, double angular_z) {
-    // Publish the Twist message to /cmd_vel
-    geometry_msgs::Twist twist_msg;
-    twist_msg.linear.x = linear_x;
-    twist_msg.linear.y = linear_y;
-    twist_msg.angular.z = angular_z;
-    cmd_vel_pub_.publish(twist_msg);
-  }
+  ros::NodeHandle nh;
+  ros::ServiceServer service;
+  ros::Subscriber odomSubscriber;
+  ros::Publisher cmdVelPublisher;
+  bool rotating = false;
+  bool rotationSuccessful = false;
+  double requestedDegrees = 0.0;
+  double initialYaw = 0.0;
+  const double rotationSpeed = 0.5; // Adjust the angular velocity as needed
+  const double rotationTimeout =
+      10.0; // Adjust the timeout as needed (in seconds)
+  const double angleTolerance = 0.01; // Adjust the angle tolerance as needed
+  double stabilizationFactor;         // Added member variable
+  const double stabilizationDuration =
+      1.0; // Adjust the stabilization duration as needed
+  nav_msgs::Odometry::ConstPtr odomMsg;
 };
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "rotate_node");
-  RotateNode rotate_node;
+  ros::init(argc, argv, "rotate_service_node");
+  RotateService rotateService;
   ros::spin();
 
   return 0;

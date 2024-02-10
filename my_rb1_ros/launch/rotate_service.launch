@@ -1,5 +1,4 @@
-<!-- rotate_service.launch -->
+<!-- my_rb1_ros/launch/rotate_service.launch -->
 <launch>
-  <!-- Start the rotate_service_node -->
-  <node name="rotate_service_node" pkg="my_rb1_ros" type="rotate_service_node" output="screen"/>
+    <node name="rotate_service_node" type="rotate_service_node" pkg="my_rb1_ros" output="screen"/>
 </launch>
